@@ -12,48 +12,79 @@ import java.net.SocketTimeoutException;
 public class ThreadServer extends Thread{
 
 	// atributo socket
-	private ServerSocket serverSocket;
+	private Socket s;
 
 	// defina un atributo identificador local de tipo int
 	private int id = 0;
 	
 	private double timeout = 1.5;
 	
-	public ThreadServer() throws IOException {
+	private BufferedReader br;
+
+	private PrintWriter pw;
+	
+	private boolean terminado;
+		
+	public ThreadServer(Socket pS, int pId) throws IOException {
 		// asigne el valor a los atributos correspondientes
-		serverSocket = new ServerSocket(Servidor.PUERTO);
-	    serverSocket.setSoTimeout(10000);    
+		s = pS;
+	    s.setSoTimeout(10000);  
+	    id = pId;
 	    
-	    serverSocket.bind(InetSocketAddress.createUnresolved("java2s.com", 8080), 1000);
-	}
+	    try {
+			br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			pw = new PrintWriter(s.getOutputStream(), true);
+			
+		}
+		catch (IOException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
-	public void run() {
+		start();
 
-		while (true) {
-		      try {
-		        System.out.println("Waiting for client on port " + serverSocket.getLocalPort() + "...");
-		        Socket client = serverSocket.accept();
 
-		        System.out.println("Just connected to " + client.getRemoteSocketAddress());
-		        client.close();
-		      } catch (SocketTimeoutException s) {
-		        System.out.println("Socket timed out!");
-		        break;
-		      } catch (IOException e) {
-		        e.printStackTrace();
-		        break;
-		      }
-		    }
 	}
 	
-	public static void main(String[] args) {
-	    try {
-	      Thread t = new ThreadServer() ;
-	      t.start();
-	    } catch (IOException e) {
-	      e.printStackTrace();
-	    }
-	  }
+	public void run()
+	{
+		System.out.println("Comunicación iniciada");
+//		BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+		String fromUser="";
+		String fromServidor="";
+		String inputLine="";
+		try{
+		while ((fromUser=br.readLine() )!= null) 
+		{ 
+			System.out.println ("Server: " + inputLine); 
+
+			if (inputLine.equals("?")) 
+				inputLine = new String ("\"Bye.\" ends Client, " +
+						"\"End Server.\" ends Server");
+
+			pw.println(inputLine); 
+
+			if (inputLine.equals("Bye.")) 
+				break; 
+
+			if (inputLine.equals("End Server.")) 
+				terminado = true; 
+		} 
+
+		pw.close(); 
+		
+		br.close(); 
+		s.close();
+		}
+		catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+
+	}
+
+
 }
 
 
