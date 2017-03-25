@@ -22,7 +22,7 @@ public class ThreadServer extends Thread{
 
 	private int id = 0;
 
-	private int timeout = 100000;
+	private int timeout = 1000*60;
 
 	private BufferedReader br;
 
@@ -30,7 +30,7 @@ public class ThreadServer extends Thread{
 
 	private FileInputStream fis = null;
 	private BufferedInputStream bis = null;
-    private PrintWriter pw;
+	private PrintWriter pw;
 
 
 	private OutputStream os = null;
@@ -65,7 +65,7 @@ public class ThreadServer extends Thread{
 		System.out.println("Comunicación iniciada");
 		String fromUser="";
 		String fromServer="";
-		
+
 
 		try{
 			fromServer="HELLO it's me";
@@ -79,10 +79,11 @@ public class ThreadServer extends Thread{
 				pw.println(fromServer);
 				fromUser = br.readLine();
 				System.out.println("el cliente dijo2: " + fromUser );
+				s.setReceiveBufferSize(2048);
+				System.out.println("da size:" + s.getReceiveBufferSize());
+
 				enviarArchivo(fromUser);
 			}
-
-			
 		}
 
 		catch (IOException e) {
@@ -97,31 +98,46 @@ public class ThreadServer extends Thread{
 				e.printStackTrace();
 			} 
 		}
-
-
 	}
-	
+
 	public void enviarArchivo(String nombre) throws IOException
 	{
 		String path = buscarArchivo(nombre);
 		File myFile = new File (path);
 		byte [] mybytearray  = new byte [(int)myFile.length()];
+		int tamaño = mybytearray.length;
+		
+		//Definir el tamaño de los mensajes
+		byte[] bytes = new byte[ 2048*16];
+		int current=0;
+
+
 		try 
 		{
 			fis = new FileInputStream(myFile);
+
 		}
 		catch (FileNotFoundException e) {
 			System.out.println("Archivo no encontrado");
 		}
-		bis = new BufferedInputStream(fis);
-		bis.read(mybytearray,0,mybytearray.length);
+
+		int bytesRead=fis.read(bytes);
+//		System.out.println("count"+ count);
+		while (bytesRead  > 0) {
+			os.write(bytes, 0, bytesRead);
+			current += bytesRead;
+			System.out.println("Sending " + nombre + +current/1024+"KB of "+ tamaño/1024 + "KB"  );
+			bytesRead=fis.read(bytes);
+
+
+		}
+		os.flush();
 
 		System.out.println("Sending " + path + "(" + mybytearray.length + " bytes)");
-		os.write(mybytearray,0,mybytearray.length);
-		os.flush();
+		//		os.write(mybytearray,0,mybytearray.length);
 		System.out.println("Done.");
 	}
-	
+
 	public String buscarArchivo(String nombre)
 	{
 		String path= "";
@@ -135,7 +151,7 @@ public class ThreadServer extends Thread{
 		}
 		return path;
 	}
-	
+
 	public void cerrarConn() throws IOException
 	{
 		if (os != null) os.close();
