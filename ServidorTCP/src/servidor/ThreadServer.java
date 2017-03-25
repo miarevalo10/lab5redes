@@ -30,6 +30,7 @@ public class ThreadServer extends Thread{
 
 	private FileInputStream fis = null;
 	private BufferedInputStream bis = null;
+    private PrintWriter pw;
 
 
 	private OutputStream os = null;
@@ -44,6 +45,7 @@ public class ThreadServer extends Thread{
 		try {
 			br = new BufferedReader(new InputStreamReader(s.getInputStream()));
 			os = s.getOutputStream();
+			pw = new PrintWriter(s.getOutputStream(), true);
 
 		}
 		catch (IOException e) 
@@ -61,40 +63,35 @@ public class ThreadServer extends Thread{
 	{
 
 		System.out.println("Comunicación iniciada");
-		//		BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 		String fromUser="";
-		String fromServidor="";
-		String inputLine="";
+		String fromServer="";
+		
 
 		try{
-			System.out.println ("Server: " + inputLine); 
+			fromServer="HELLO it's me";
+			System.out.println ("Server: " + fromServer); 
+			pw.println(fromServer);
+			fromUser = br.readLine();
+			System.out.println("el cliente dijo: " + fromUser );
+			if(fromUser.equals("HELLO")){
+				System.out.println("antes de dar archivos");
+				fromServer= darArchivos();
+				pw.println(fromServer);
+				fromUser = br.readLine();
+				System.out.println("el cliente dijo2: " + fromUser );
+				enviarArchivo(fromUser);
+			}
 
-			File myFile = new File (FILE_TO_SEND);
-			byte [] mybytearray  = new byte [(int)myFile.length()];
-			fis = new FileInputStream(myFile);
-			bis = new BufferedInputStream(fis);
-			bis.read(mybytearray,0,mybytearray.length);
+			
+		}
 
-			System.out.println("Sending " + FILE_TO_SEND + "(" + mybytearray.length + " bytes)");
-			os.write(mybytearray,0,mybytearray.length);
-			os.flush();
-			System.out.println("Done.");
-		}
-		catch (FileNotFoundException e) {
-			System.out.println("Archivo inexistente");
-		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
 		finally {
 			System.out.println("finally");
 			try {
-				if (os != null) os.close();
-				if (bis != null) bis.close();
-				if (s != null)	s.close();
-
-
-				br.close();
+				cerrarConn();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -102,6 +99,53 @@ public class ThreadServer extends Thread{
 		}
 
 
+	}
+	
+	public void enviarArchivo(String nombre) throws IOException
+	{
+		String path = buscarArchivo(nombre);
+		File myFile = new File (path);
+		byte [] mybytearray  = new byte [(int)myFile.length()];
+		try 
+		{
+			fis = new FileInputStream(myFile);
+		}
+		catch (FileNotFoundException e) {
+			System.out.println("Archivo no encontrado");
+		}
+		bis = new BufferedInputStream(fis);
+		bis.read(mybytearray,0,mybytearray.length);
+
+		System.out.println("Sending " + path + "(" + mybytearray.length + " bytes)");
+		os.write(mybytearray,0,mybytearray.length);
+		os.flush();
+		System.out.println("Done.");
+	}
+	
+	public String buscarArchivo(String nombre)
+	{
+		String path= "";
+		switch (nombre) {
+		case "Lab5":
+			path="data/Lab5.pdf";
+			break;
+		case "Lab4":
+			path="data/Lab4.pdf";
+			break;	
+		}
+		return path;
+	}
+	
+	public void cerrarConn() throws IOException
+	{
+		if (os != null) os.close();
+		if (bis != null) bis.close();
+		if (s != null)	s.close();
+		if (br != null)	br.close();
+	}
+	public String darArchivos()
+	{
+		return "Lab5 , Lab4";
 	}
 
 
