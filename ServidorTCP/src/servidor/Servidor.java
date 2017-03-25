@@ -24,13 +24,11 @@ public class Servidor
 			try { 
 				while (conexiones < MAX_CONN && !terminado)
 				{
-					ss.setSoTimeout(TIMEOUT);
 					System.out.println ("Esperando la conexion");
 					try
 					{
 						conexiones++;
 						ThreadServer ts = new ThreadServer (ss.accept(), conexiones); 
-						ts.start();
 					}
 					catch (SocketTimeoutException ste)
 					{
@@ -49,7 +47,7 @@ public class Servidor
 			System.err.println("No pudo crear socket en el puerto: " + PUERTO);
 			System.exit(-1);
 		}
-
+		System.out.println("aquí 1");
 		ss.close();
 	}
 
