@@ -22,14 +22,11 @@ public class ThreadServer extends Thread{
 
 	private int id = 0;
 
-	private int timeout = 1000*60;
+	//Timeout de 30seg
+	private int timeout = 1000*30;
 
 	private BufferedReader br;
-
-
-
 	private FileInputStream fis = null;
-	private BufferedInputStream bis = null;
 	private PrintWriter pw;
 
 
@@ -39,6 +36,8 @@ public class ThreadServer extends Thread{
 	public ThreadServer(Socket pS, int pId) throws IOException {
 
 		s = pS;
+		
+		//setting timeout
 		s.setSoTimeout(timeout);  
 		id = pId;
 
@@ -53,10 +52,6 @@ public class ThreadServer extends Thread{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		start();
-
-
 	}
 
 	public void run()  
@@ -165,7 +160,6 @@ public class ThreadServer extends Thread{
 	public void cerrarConn() throws IOException
 	{
 		if (os != null) os.close();
-		if (bis != null) bis.close();
 		if (s != null)	s.close();
 		if (br != null)	br.close();
 	}

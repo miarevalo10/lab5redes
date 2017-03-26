@@ -8,7 +8,7 @@ public class Servidor
 {
 
 	public static final int PUERTO = 8081;
-	public static final int MAX_CONN = 100;
+	public static final int MAX_CONN = 3;
 	public static final int TIMEOUT = 10000;
 	
 	private static boolean terminado = false;
@@ -29,10 +29,12 @@ public class Servidor
 					{
 						conexiones++;
 						ThreadServer ts = new ThreadServer (ss.accept(), conexiones); 
+						ts.start();
 					}
 					catch (SocketTimeoutException ste)
 					{
 						System.out.println ("Timeout");
+					
 					}
 				}
 			}
