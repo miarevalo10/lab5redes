@@ -11,15 +11,11 @@ import java.net.Socket;
 
 public class Cliente {
 
-	public final static int SOCKET_PORT = 8081;      // you may change this
-	public final static String SERVER = "127.0.0.1";  // localhost
-	public final static String
-	FILE_TO_RECEIVED = "data/ejempl9.pdf";  // you may change this, I give a
-	// different name because i don't want to
-	// overwrite the one used by server...
-
-	public final static int FILE_SIZE = 6022386; // file size temporary hard coded
-	// should bigger than the file to be downloaded
+	public final static int SOCKET_PORT = 8081;      
+	public final static String SERVER = "127.0.0.1";  
+//	public final static String 	FILE_TO_RECEIVED = "data/modelado.pdf";  
+//
+//	public final static int FILE_SIZE = 1024*50000; 
 
 	public static void main (String [] args ) throws IOException {
 		int bytesRead;
@@ -51,27 +47,34 @@ public class Cliente {
 			}
 
 			// receive file
-			byte [] mybytearray  = new byte [FILE_SIZE];
+			//Lee el tamaño del archivo enviado por el servidor y crea el array de bytes con un tamaño
+			//mayor para poder guardarlo
+			int filesize = Integer.parseInt(br.readLine());
+			byte [] mybytearray  = new byte [filesize + 1024*1024];
+			System.out.println("tamaño " + filesize);
 			InputStream is = sock.getInputStream();
-			fos = new FileOutputStream(FILE_TO_RECEIVED);
+			String path = "data/" + fromUser + ".pdf";
+			fos = new FileOutputStream(path);
 			bos = new BufferedOutputStream(fos);
 
-			int bytes = 2048*16;
+//			byte[] bytes = new byte[ 2048*16];
+			int bytes =2048*16;
 
 			bytesRead = is.read(mybytearray, current, mybytearray.length);
-
 			current = bytesRead;
 
 			while (bytesRead>-1) {
+				//Lee los bytes enviados y los va guardando en mybytearray, con un offset de current y
+				//de a paquetes de tamaño bytes
 				bytesRead = is.read(mybytearray, current, bytes);
 				if(bytesRead >= 0) current += bytesRead;
-				System.out.println("Recibiendo " + current + "KB");
+				System.out.println("Recibiendo " + current/1024 + "KB de " + filesize/1024 + "KB");
 			}
-			//          System.out.println("current" + current);
-
+			
+			//Escribe el array de bytes en el path definido en fileoutputstream
 			bos.write(mybytearray, 0 , current);
 			bos.flush();
-			System.out.println("File " + FILE_TO_RECEIVED
+			System.out.println("File " + path
 					+ " downloaded (" + current + " bytes read)");
 		}
 		finally {
